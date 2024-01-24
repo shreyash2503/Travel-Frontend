@@ -1,5 +1,10 @@
 import styled from "styled-components";
 import image from "../assets/login__image.jpg";
+import { ChangeEvent, FormEvent, useDebugValue, useState } from "react";
+import { loginUser } from "../API/user.requests";
+import { useDispatch } from "react-redux";
+import { signInStart } from "../store/user/user.action";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const MainContainer = styled.div`
   display: flex;
@@ -94,6 +99,32 @@ const Button = styled.button`
 `;
 
 function LoginPage() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  interface FormData {
+    email: string;
+    password: string;
+  }
+
+  const currentUser: FormData = {
+    email: "",
+    password: "",
+  };
+
+  const [user, setUser] = useState<FormData>(currentUser);
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setUser((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    dispatch(signInStart(user.email, user.password));
+    setUser(currentUser);
+    // setUser(currentUser);
+    navigate("/home");
+  };
+
   return (
     <>
       <MainContainer>
@@ -102,9 +133,24 @@ function LoginPage() {
         </ImageContainer>
         <InputContainer>
           <Heading>Login</Heading>
-          <Form>
-            <FormInput type="email" placeholder="Email" />
-            <FormInput type="password" placeholder="Password" />
+          <Form onSubmit={handleSubmit}>
+            <FormInput
+              name="email"
+              type="email"
+              placeholder="Email"
+              value={user.email}
+              onChange={handleChange}
+              required
+            />
+            <FormInput
+              name="password"
+              type="password"
+              value={user.password}
+              placeholder="Password"
+              onChange={handleChange}
+              required
+              min={8}
+            />
             <Button type="submit">Login</Button>
           </Form>
         </InputContainer>
